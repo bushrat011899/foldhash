@@ -61,7 +61,14 @@ pub(crate) fn gen_per_hasher_seed() -> u64 {
     // nondeterminism added.
     #[cfg(all(not(feature = "std"), target_has_atomic = "ptr"))]
     {
-        use core::sync::atomic::{AtomicUsize, Ordering};
+        use core::sync::atomic::Ordering;
+
+        #[cfg(target_has_atomic = "ptr")]
+        use core::sync::atomic::AtomicUsize;
+
+        #[cfg(not(target_has_atomic = "ptr"))]
+        use portable_atomic::AtomicUsize;
+
         static PER_HASHER_NONDETERMINISM: AtomicUsize = AtomicUsize::new(0);
 
         let nondeterminism = PER_HASHER_NONDETERMINISM.load(Ordering::Relaxed) as u64;
